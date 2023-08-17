@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-const { diagnostic, base } = defineProps<{
+const props = defineProps<{
   diagnostic: any
   base: string
 }>()
@@ -21,7 +21,7 @@ function calcLink(text: string) {
       const link: Link = {
         textContent: file,
         onclick: () => {
-          fetch(`${base}__open-in-editor?file=` + encodeURIComponent(file))
+          fetch(`${props.base}__open-in-editor?file=` + encodeURIComponent(file))
         },
       }
 
@@ -46,17 +46,20 @@ const codeFrameRE = /^(?:>?\s+\d+\s+\|.*|\s+\|\s*\^.*)\r?\n/gm
 codeFrameRE.lastIndex = 0
 
 const hasFrame = computed(() => {
+  const diagnostic = props.diagnostic;
   return diagnostic.frame && codeFrameRE.test(diagnostic.frame)
 })
 
 const file = computed(() => {
-  return (diagnostic.loc?.file || diagnostic.id || 'unknown file').split(`?`)
-}).value[0]
+  const diagnostic = props.diagnostic;
+  return (diagnostic.loc?.file || diagnostic.id || 'unknown file').split(`?`)[0]
+})
 
 const errorSource = computed(() => {
+  const diagnostic = props.diagnostic;
   return {
     ...calcLink(
-      `${file}` + (diagnostic.loc ? `:${diagnostic.loc.line}:${diagnostic.loc.column}` : '')
+      `${file.value}` + (diagnostic.loc ? `:${diagnostic.loc.line}:${diagnostic.loc.column}` : '')
     )[0],
     linkFiles: true,
   }
